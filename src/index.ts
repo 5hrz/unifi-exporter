@@ -133,8 +133,8 @@ const collectData = async () => {
     try {
         const ispData = await GetISPMetrics("5m", toRFC3339(new Date(Date.now() - 1000 * 60 * 60)), toRFC3339(new Date()));
         if (ispData.data) {
-            ispData.data?.forEach((data) => {
-                const hostname = hostsBuf.find((v) => v.hostId == data.hostId)?.name ?? "";
+            ispData.data.forEach((data) => {
+                const hostname = hostsBuf.find((v) => v.hostId == data.hostId)?.name ?? data.siteId;
                 averageLatencyGauge.labels(data.hostId, hostname).set(data.periods.slice(-1)[0].data.wan.avgLatency)
                 maxLatencyGauge.labels(data.hostId, hostname).set(data.periods.slice(-1)[0].data.wan.maxLatency)
                 packetLossGauge.labels(data.hostId, hostname).set(data.periods.slice(-1)[0].data.wan.packetLoss)
@@ -147,8 +147,8 @@ const collectData = async () => {
     try {
         const statData = await ListSites(5000);
         if (statData.data) {
-            statData.data?.forEach((data) => {
-                const hostname = hostsBuf.find((v) => v.hostId == data.hostId)?.name ?? "";
+            statData.data.forEach((data) => {
+                const hostname = hostsBuf.find((v) => v.hostId == data.hostId)?.name ?? data.siteId;
                 totalClientGauge.labels(data.hostId, hostname).set(data.statistics.counts.wifiClient + data.statistics.counts.wiredClient);
                 wifiClientGauge.labels(data.hostId, hostname).set(data.statistics.counts.wifiClient);
                 wiredClientGauge.labels(data.hostId, hostname).set(data.statistics.counts.wiredClient);
