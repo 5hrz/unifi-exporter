@@ -67,8 +67,14 @@ const guestClientGauge = new Gauge({
 
 const unifiStatusGauge = new Gauge({
     name: "unifi_status",
-    help: "UniFi status(-999 : offline, 0 : any offline device, 100 : online)",
+    help: "UniFi status(-999 : offline, 100 : online)",
     labelNames: ["hostId", "name"],
+});
+
+const unifiDeviceStatusGauge = new Gauge({
+    name: "unifi_device_status",
+    help: "UniFi status of devices(-999 : offline, 0 : any offline device, 100 : online)",
+    labelNames: ["id", "hostId", "hostname", "name", "model","shortname", "ip", "note", ],
 });
 
 const initUniFiCollector = () => {
@@ -106,7 +112,7 @@ const initHosts = async () => {
                 if (!hostsBuf.find((v) => v.hostId == host.id)) {
                     hostsBuf.push({
                         hostId: host.id,
-                        name: host.reportedState?.name ?? host.reportedState?.hostname ?? "",
+                        name: host.reportedState?.name ?? host.reportedState?.hostname ?? host.ipAddress ,
                         hardwareId: host.hardwareId,
                         address: host.reportedState?.ipAddrs ?? []
                     });
@@ -115,7 +121,7 @@ const initHosts = async () => {
                         if (v.hostId == host.id) {
                             return {
                                 hostId: host.id,
-                                name: host.reportedState?.name ?? host.reportedState?.hostname ?? "",
+                                name: host.reportedState?.name ?? host.reportedState?.hostname ?? host.ipAddress,
                                 hardwareId: host.hardwareId,
                                 address: host.reportedState?.ipAddrs ?? []
                             };
@@ -175,6 +181,7 @@ const collectData = async () => {
                     } else if (device.status == "offline" && status != -999) {
                         status = 0;
                     }
+                    unifiDeviceStatusGauge.labels(device.id, deviceGroup.hostId, deviceGroup.hostName, device.name, device.model, device.shortname, device.ip, device.note ?? "").set(device.status == "online" ? 100 : -999)
                 })
                 unifiStatusGauge.labels(deviceGroup.hostId, deviceGroup.hostName).set(status);
             });
