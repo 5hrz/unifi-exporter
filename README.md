@@ -5,7 +5,8 @@ UniFi Site Manager APIを用いてprometheus用のデータを収集し、metric
 ## Installation
 
 環境変数
-```
+
+```env
 UNIFI_API_KEY=<unifi.ui.comで作成したAPI KEY>
 UNIFI_API_VERSION=<ea もしくは v1(v1だと一部機能が使用できません)>
 PORT=<アプリケーションを起動するポート>
@@ -29,4 +30,5 @@ metricsは`/metrics`から取得が可能です。
 | unifi_wifi_device    | Guage | UniFi WiFiデバイス総数 | `hostId` `name` |
 | unifi_wired_device   | Guage | UniFi 有線デバイス総数  | `hostId` `name` |
 | unifi_guest_client   | Guage | UniFiゲスト数         | `hostId` `name` |
-| unifi_status         | Guage | 起動状況<br>-999 : オフライン<br>0 : オフラインデバイスが存在<br>100 : オンライン         | `hostId` `name` |
+| unifi_status         | Guage | 起動状況<br>-999 : オフライン<br>0 : オフラインデバイスが存在<br>100 : オンライン | `hostId` `name` |
+| unifi_device_status  | Guage | 起動状況<br>-999 : オフライン<br>100 : オンライン                             | `id` `hostId` `hostname` `name` `model` `shortname` `ip` `note` |
