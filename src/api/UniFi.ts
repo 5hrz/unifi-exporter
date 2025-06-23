@@ -546,7 +546,7 @@ export interface UniFiWANStatus {
 
 const UNIFI_ENDPOINT = `https://api.ui.com/${process.env.UNIFI_API_VERSION ?? "ea"}/`;
 
-export const get = async <T extends (UniFiResponseData | UniFiResponseData[])>(path: string, params?: { [key in string]: string | string[] | undefined}, headers?: { [key in string]: string}) => {
+export const get = async <T extends (UniFiResponseData | UniFiResponseData[])>(path: string, params?: { [key in string]: string | string[] | undefined}, headers?: { [key in string]: string}, resend: boolean = true) => {
     const url = new URL(`${UNIFI_ENDPOINT}${path}`);
     if (params) {
         for (const [key, value] of Object.entries(params)) {
@@ -557,23 +557,30 @@ export const get = async <T extends (UniFiResponseData | UniFiResponseData[])>(p
             }
         }
     }
-    const retrievedData = await fetch(url.toString(), {
-        headers: {
-            ...headers,
-            "X-API-Key": process.env.UNIFI_API_KEY ?? "",
-            "Accept": "application/json"
-        },
-        method: "GET",
-        cache: "no-cache"
-    });
-    if (retrievedData.status == 200) {
-        return await retrievedData.json() as UniFiResponse<T>;
-    } else {
-        throw new Error((await retrievedData.json()).message);
+    try {
+        const retrievedData = await fetch(url.toString(), {
+            headers: {
+                ...headers,
+                "X-API-Key": process.env.UNIFI_API_KEY ?? "",
+                "Accept": "application/json"
+            },
+            method: "GET",
+            cache: "no-cache",
+        });
+        if (retrievedData.status == 200) {
+            return await retrievedData.json() as UniFiResponse<T>;
+        } else {
+            throw new Error((await retrievedData.json()).message);
+        }
+    } catch (e: unknown) {
+        console.error(e);
+        if (resend) {
+            get<T>(path,params,headers,false);
+        }
     }
 };
 
-export const post = async <T extends (UniFiResponseData | UniFiResponseData[])>(path: string, params?: { [key in string]: string | string[] | undefined}, body?: { [key in string]: unknown}, headers?: { [key in string]: string}) => {
+export const post = async <T extends (UniFiResponseData | UniFiResponseData[])>(path: string, params?: { [key in string]: string | string[] | undefined}, body?: { [key in string]: unknown}, headers?: { [key in string]: string}, resend: boolean = true) => {
     const url = new URL(`${UNIFI_ENDPOINT}${path}`);
     if (params) {
         for (const [key, value] of Object.entries(params)) {
@@ -584,20 +591,27 @@ export const post = async <T extends (UniFiResponseData | UniFiResponseData[])>(
             }
         }
     }
-    const retrievedData = await fetch(url.toString(), {
-        headers: {
-            ...headers,
-            "X-API-Key": process.env.UNIFI_API_KEY ?? "",
-            "Accept": "application/json"
-        },
-        body: body ? JSON.stringify(body) : undefined,
-        method: "POST",
-        cache: "no-cache"
-    });
-    if (retrievedData.status == 200) {
-        return await retrievedData.json() as UniFiResponse<T>;
-    } else {
-        throw new Error((await retrievedData.json()).message);
+    try {
+        const retrievedData = await fetch(url.toString(), {
+            headers: {
+                ...headers,
+                "X-API-Key": process.env.UNIFI_API_KEY ?? "",
+                "Accept": "application/json"
+            },
+            body: body ? JSON.stringify(body) : undefined,
+            method: "POST",
+            cache: "no-cache"
+        });
+        if (retrievedData.status == 200) {
+            return await retrievedData.json() as UniFiResponse<T>;
+        } else {
+            throw new Error((await retrievedData.json()).message);
+        }
+    } catch(e: unknown) {
+        console.error(e);
+        if (resend) {
+            post<T>(path, params, body, headers, false);
+        }
     }
 };
 

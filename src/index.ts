@@ -106,7 +106,7 @@ interface Host {
 
 const initHosts = async () => {
     const hosts = await ListHosts();
-    if (hosts.httpStatusCode == 200 && hosts.data) {
+    if (hosts?.httpStatusCode == 200 && hosts.data) {
         if (Array.isArray(hosts.data)) {
             hosts.data.forEach((host) => {
                 if (!hostsBuf.find((v) => v.hostId == host.id)) {
@@ -138,7 +138,7 @@ const initHosts = async () => {
 const collectData = async () => {
     try {
         const ispData = await GetISPMetrics("5m", toRFC3339(new Date(Date.now() - 1000 * 60 * 60)), toRFC3339(new Date()));
-        if (ispData.data) {
+        if (ispData?.data) {
             ispData.data.forEach((data) => {
                 const hostname = hostsBuf.find((v) => v.hostId == data.hostId)?.name ?? data.siteId;
                 averageLatencyGauge.labels(data.hostId, hostname).set(data.periods.slice(-1)[0].data.wan.avgLatency)
@@ -152,7 +152,7 @@ const collectData = async () => {
 
     try {
         const statData = await ListSites(5000);
-        if (statData.data) {
+        if (statData?.data) {
             statData.data.forEach((data) => {
                 const hostname = hostsBuf.find((v) => v.hostId == data.hostId)?.name ?? data.siteId;
                 totalClientGauge.labels(data.hostId, hostname).set(data.statistics.counts.wifiClient + data.statistics.counts.wiredClient);
@@ -172,7 +172,7 @@ const collectData = async () => {
 
     try {
         const deviceData = await ListDevices(undefined, undefined, 10000);
-        if (deviceData.data) {
+        if (deviceData?.data) {
             deviceData.data.forEach((deviceGroup) => {
                 let status = 100;
                 deviceGroup.devices.forEach((device) => {
